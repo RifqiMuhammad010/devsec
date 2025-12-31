@@ -1,0 +1,25 @@
+@startuml
+title WebKoi — Contract Struct (Class View)
+
+' ----- Class view (contract struct) -----
+class KoiData {
+  +id: string
+  +variety: string
+  +breeder: string
+  +gender: string
+  +age: string
+  +size: uint256
+  +condition: string
+  +photoUrl: string
+  +certUrl: string
+  +contestUrl: string
+  +timestamp: uint256
+  +issuer: address
+}
+
+class KoiCert {
+}
+
+KoiCert *-- KoiData : stores
+
+@enduml

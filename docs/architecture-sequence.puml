@@ -1,0 +1,16 @@
+@startuml
+title WebKoi — Sequence: mint certificate (high level)
+
+participant "Admin UI (pages/admin)" as AdminUI
+participant "WalletProvider" as Wallet
+participant "Supabase" as Supa
+participant "ContractConfig" as ContractConfig
+participant "KoiCert Contract" as Contract
+
+AdminUI ->> Supa: upload photo/cert -> returns URL
+AdminUI ->> Wallet: request tx signing
+Wallet ->> ContractConfig: send signed tx (mintCertificate + URLs)
+ContractConfig ->> Contract: mintCertificate(...)
+Contract -->> AdminUI: emit KoiMinted event (optionally consumed via listener)
+
+@enduml

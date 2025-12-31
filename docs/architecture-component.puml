@@ -1,0 +1,34 @@
+@startuml
+title WebKoi — Architecture (Component View)
+
+' ----- Component view -----
+package "Frontend (Next.js)" {
+  component "App (app/)" as App
+  component "Pages & Components" as Pages
+  component "WalletProvider\n(context/WalletContext.tsx)" as Wallet
+}
+
+package "Libraries" {
+  component "supabase client\n(lib/supabase.ts)" as Supabase
+  component "contractConfig\n(lib/contractConfig.ts)\n(CONTRACT_ABI / ADDRESS)" as ContractConfig
+}
+
+package "Blockchain" {
+  component "KoiCert (Solidity)\n(contracts/KoiCert.sol)" as KoiContract
+  component "Artifacts / Typechain\n(typechain-types/, artifacts/)" as Artifacts
+}
+
+package "Dev / Infra" {
+  component "Hardhat / scripts\n(scripts/deploy.ts)" as Hardhat
+}
+
+' Relationships
+App --> Wallet : uses (wrap app)
+Pages --> Supabase : fetch / upload profiles & photos
+Pages --> ContractConfig : call contract functions (mintCertificate, getKoi)
+ContractConfig --> KoiContract : on-chain transactions (ethers)
+Hardhat --> KoiContract : deploy
+Artifacts --> App : optional typed contract bindings
+Wallet --> ContractConfig : provides signer / account for txs
+
+@enduml

@@ -1,0 +1,77 @@
+@startuml
+title WebKoi — Architecture (Component View)
+
+' ----- Component view -----
+package "Frontend (Next.js)" {
+  component "App (app/)" as App
+  component "Pages & Components" as Pages
+  component "WalletProvider\n(context/WalletContext.tsx)" as Wallet
+}
+
+package "Libraries" {
+  component "supabase client\n(lib/supabase.ts)" as Supabase
+  component "contractConfig\n(lib/contractConfig.ts)\n(CONTRACT_ABI / ADDRESS)" as ContractConfig
+}
+
+package "Blockchain" {
+  component "KoiCert (Solidity)\n(contracts/KoiCert.sol)" as KoiContract
+  component "Artifacts / Typechain\n(typechain-types/, artifacts/)" as Artifacts
+}
+
+package "Dev / Infra" {
+  component "Hardhat / scripts\n(scripts/deploy.ts)" as Hardhat
+}
+
+' Relationships
+App --> Wallet : uses (wrap app)
+Pages --> Supabase : fetch / upload profiles & photos
+Pages --> ContractConfig : call contract functions (mintCertificate, getKoi)
+ContractConfig --> KoiContract : on-chain transactions (ethers)
+Hardhat --> KoiContract : deploy
+Artifacts --> App : optional typed contract bindings
+Wallet --> ContractConfig : provides signer / account for txs
+
+@enduml
+
+@startuml
+title WebKoi — Contract Struct (Class View)
+
+' ----- Class view (contract struct) -----
+class KoiData {
+  +id: string
+  +variety: string
+  +breeder: string
+  +gender: string
+  +age: string
+  +size: uint256
+  +condition: string
+  +photoUrl: string
+  +certUrl: string
+  +contestUrl: string
+  +timestamp: uint256
+  +issuer: address
+}
+
+class KoiCert {
+}
+
+KoiCert *-- KoiData : stores
+
+@enduml
+
+@startuml
+title WebKoi — Sequence: mint certificate (high level)
+
+participant "Admin UI (pages/admin)" as AdminUI
+participant "WalletProvider" as Wallet
+participant "Supabase" as Supa
+participant "ContractConfig" as ContractConfig
+participant "KoiCert Contract" as Contract
+
+AdminUI ->> Supa: upload photo/cert -> returns URL
+AdminUI ->> Wallet: request tx signing
+Wallet ->> ContractConfig: send signed tx (mintCertificate + URLs)
+ContractConfig ->> Contract: mintCertificate(...)
+Contract -->> AdminUI: emit KoiMinted event (optionally consumed via listener)
+
+@enduml
